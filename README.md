@@ -1,4 +1,4 @@
-![CI](https://github.com/YOUR_GITHUB_USERNAME/focusguard-insights/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/irfan271/focusguard-insights/actions/workflows/ci.yml/badge.svg)
 # FocusGuard Insights
 
 **Status:** Completed portfolio project demonstrating an end-to-end synthetic-data ML pipeline, grouped and temporal evaluation, model metadata tracking, and Streamlit deployment.
