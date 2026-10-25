@@ -289,7 +289,8 @@ python -m pytest -q
 <img width="1518" height="562" alt="image" src="https://github.com/user-attachments/assets/4d455d44-1bfb-4672-8d92-9fd067c5e96d" />
 
 ![FocusGuard Insights prediction page Result]
-<img width="1476" height="317" alt="image" src="https://github.com/user-attachments/assets/bf2f61b2-174d-4fb2-aa0c-19332565b7a0" />
+<img width="1533" height="817" alt="image" src="https://github.com/user-attachments/assets/33129093-aa64-40b2-9e6b-1bcdbaa59bcf" />
+
 
 
 ## Continuous Integration
