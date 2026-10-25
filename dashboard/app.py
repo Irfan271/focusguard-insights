@@ -44,6 +44,10 @@ def load_data():
 df = load_data()
 
 
+if "prediction_history" not in st.session_state:
+    st.session_state.prediction_history = []
+
+
 dashboard_tab, predictor_tab, about_tab = st.tabs(
     [
         "📊 Dashboard",
@@ -392,11 +396,6 @@ with predictor_tab:
     is_weekend = st.checkbox("This record is for a Saturday or Sunday")
 
 
-    prediction_result = None
-    recommendations = []
-    report_text = ""
-
-
     if st.button("Predict Productivity"):
         validation_errors = []
 
@@ -455,14 +454,54 @@ with predictor_tab:
 
 
         prediction = prediction_result[TARGET_COLUMN]
+        probabilities = prediction_result["probabilities"]
+        confidence = probabilities[prediction]
 
 
         if prediction == "Productive":
-            st.success(f"Predicted productivity: {prediction}")
+            st.success(
+                f"Predicted productivity: {prediction} "
+                f"({confidence:.1%} confidence)"
+            )
         elif prediction == "Moderate":
-            st.warning(f"Predicted productivity: {prediction}")
+            st.warning(
+                f"Predicted productivity: {prediction} "
+                f"({confidence:.1%} confidence)"
+            )
         else:
-            st.error(f"Predicted productivity: {prediction}")
+            st.error(
+                f"Predicted productivity: {prediction} "
+                f"({confidence:.1%} confidence)"
+            )
+
+
+        st.write("### Prediction Confidence")
+
+
+        confidence_df = pd.DataFrame(
+            [
+                {
+                    "Productivity Label": class_name,
+                    "Probability": probability,
+                }
+                for class_name, probability in probabilities.items()
+            ]
+        )
+
+
+        st.dataframe(
+            confidence_df,
+            use_container_width=True,
+            hide_index=True,
+        )
+
+
+        st.caption(
+            "Confidence is the model’s predicted probability for the "
+            "selected productivity label. Because this model is trained "
+            "on synthetic rule-generated labels, confidence should not be "
+            "interpreted as real-world certainty."
+        )
 
 
         st.write("### Personalized Recommendations")
@@ -472,13 +511,44 @@ with predictor_tab:
             st.write(f"- {recommendation}")
 
 
+        history_record = {
+            "predicted_at": datetime.now().astimezone().strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+            "prediction": prediction,
+            "confidence": confidence,
+            "usage_minutes": usage_minutes,
+            "sessions": sessions,
+            "notifications": notifications,
+            "study_minutes": study_minutes,
+            "sleep_hours": sleep_hours,
+            "hour_of_day": hour_of_day,
+            "category": category,
+            "daily_total_usage_minutes": daily_total_usage_minutes,
+            "daily_study_minutes": daily_study_minutes,
+            "is_weekend": int(is_weekend),
+        }
+
+
+        st.session_state.prediction_history.append(history_record)
+
+
         report_text = f"""FocusGuard Insights — Prediction Report
 Generated: {datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')}
 
 PREDICTION
 ----------
-Predicted productivity: {prediction_result[TARGET_COLUMN]}
+Predicted productivity: {prediction}
+Model confidence: {confidence:.1%}
 
+CLASS PROBABILITIES
+-------------------
+"""
+
+        for class_name, probability in probabilities.items():
+            report_text += f"{class_name}: {probability:.4f}\n"
+
+        report_text += f"""
 INPUT SUMMARY
 -------------
 App usage minutes: {usage_minutes}
@@ -510,6 +580,9 @@ features used for prediction, so the model's high evaluation scores
 reflect label leakage rather than validated real-world predictive
 performance.
 
+Confidence represents the model's predicted probability for its chosen
+label, not real-world certainty.
+
 This report should not be used for medical, academic, employment, or
 clinical decisions.
 """
@@ -519,6 +592,48 @@ clinical decisions.
             data=report_text,
             file_name="focusguard_prediction_report.txt",
             mime="text/plain",
+        )
+
+
+    # Prediction history.
+    st.divider()
+    st.subheader("Prediction History")
+
+
+    if st.session_state.prediction_history:
+        history_df = pd.DataFrame(
+            st.session_state.prediction_history
+        )
+
+
+        st.dataframe(
+            history_df,
+            use_container_width=True,
+            hide_index=True,
+        )
+
+
+        csv_history = history_df.to_csv(index=False).encode("utf-8")
+
+
+        download_col, clear_col = st.columns(2)
+
+
+        download_col.download_button(
+            label="Download prediction history (CSV)",
+            data=csv_history,
+            file_name="focusguard_prediction_history.csv",
+            mime="text/csv",
+        )
+
+
+        if clear_col.button("Clear prediction history"):
+            st.session_state.prediction_history = []
+            st.rerun()
+    else:
+        st.info(
+            "No predictions yet. Generate a prediction to build your "
+            "session history."
         )
 
 
@@ -557,7 +672,8 @@ with about_tab:
         - App category
 
         The app passes these values to a trained Random Forest classifier,
-        which returns one of three productivity labels.
+        which returns one of three productivity labels and class
+        probabilities.
         """
     )
 
