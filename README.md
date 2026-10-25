@@ -1,4 +1,4 @@
-<img width="1577" height="733" alt="image" src="https://github.com/user-attachments/assets/665619f0-6884-4e94-9c05-75c235925a2b" />![CI](https://github.com/irfan271/focusguard-insights/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/irfan271/focusguard-insights/actions/workflows/ci.yml/badge.svg)
 
 # FocusGuard Insights
 
