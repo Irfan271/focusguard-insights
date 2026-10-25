@@ -1,4 +1,4 @@
-![CI](https://github.com/irfan271/focusguard-insights/actions/workflows/ci.yml/badge.svg)
+<img width="1577" height="733" alt="image" src="https://github.com/user-attachments/assets/665619f0-6884-4e94-9c05-75c235925a2b" />![CI](https://github.com/irfan271/focusguard-insights/actions/workflows/ci.yml/badge.svg)
 
 # FocusGuard Insights
 
@@ -276,6 +276,18 @@ The project includes automated tests for feature preparation, category encoding,
 ```powershell
 python -m pytest -q
 ```
+## Screenshots
+![FocusGuard Insights dashboard]
+<img width="1577" height="733" alt="image" src="https://github.com/user-attachments/assets/3d3bf2e5-7abf-41f0-a2bf-49dfde8e8fe3" />
+<img width="1602" height="660" alt="image" src="https://github.com/user-attachments/assets/caf2dc12-c438-4839-ae88-270c47716378" />
+<img width="1582" height="621" alt="image" src="https://github.com/user-attachments/assets/fad8fb88-5404-415f-97ec-b2d22baf3113" />
+
+![FocusGuard Insights prediction page]
+<img width="1518" height="562" alt="image" src="https://github.com/user-attachments/assets/4d455d44-1bfb-4672-8d92-9fd067c5e96d" />
+
+![FocusGuard Insights prediction page Result]
+<img width="1476" height="317" alt="image" src="https://github.com/user-attachments/assets/bf2f61b2-174d-4fb2-aa0c-19332565b7a0" />
+
 
 ## Continuous Integration
 
