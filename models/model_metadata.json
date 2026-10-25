@@ -19,7 +19,90 @@
         "category_Social",
         "category_Utility"
     ],
+    "classes": [
+        "Distracted",
+        "Moderate",
+        "Productive"
+    ],
     "accuracy": 1.0,
     "weighted_f1_score": 1.0,
-    "trained_at": "2026-10-25T20:22:58.941505"
+    "rule_based_baseline_accuracy": 1.0,
+    "split_method": "GroupShuffleSplit",
+    "grouping_columns": [
+        "user_id",
+        "date"
+    ],
+    "test_group_fraction": 0.2,
+    "random_state": 42,
+    "training_rows": 2160,
+    "testing_rows": 540,
+    "training_user_days": 360,
+    "testing_user_days": 90,
+    "overlapping_user_days": 0,
+    "future_date_holdout": {
+        "training_dates": 72,
+        "testing_dates": 18,
+        "training_rows": 2160,
+        "testing_rows": 540,
+        "accuracy": 1.0,
+        "weighted_f1_score": 1.0
+    },
+    "classification_report": {
+        "Productive": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 65.0
+        },
+        "Moderate": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 451.0
+        },
+        "Distracted": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 24.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 540.0
+        },
+        "weighted avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 540.0
+        }
+    },
+    "confusion_matrix": [
+        [
+            65,
+            0,
+            0
+        ],
+        [
+            0,
+            451,
+            0
+        ],
+        [
+            0,
+            0,
+            24
+        ]
+    ],
+    "confusion_matrix_label_order": [
+        "Productive",
+        "Moderate",
+        "Distracted"
+    ],
+    "data_source": "synthetic",
+    "evaluation_note": "User-day groups are separated between training and testing, and a future-date holdout is also evaluated. However, productivity_label is generated from rules based on the same features used for prediction, so the high accuracy reflects label leakage, not real-world predictive performance. This model should be treated as a demonstration of the pipeline.",
+    "trained_at": "2026-10-25T22:32:43.512587+05:30"
 }
