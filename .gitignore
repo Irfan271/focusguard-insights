@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# External/private data
+data/external/*
+
+# Allow FocusGuard generated datasets for GitHub Actions and deployment
+!data/raw/app_usage.csv
+!data/processed/app_usage_clean.csv
+
+# Allow trained model files needed by Streamlit Cloud
+!models/productivity_classifier.joblib
+!models/scaler.joblib
+!models/feature_columns.joblib
