@@ -56,6 +56,16 @@ focusguard-insights/
 └── README.md
 ```
 
+## Model transparency
+
+The productivity classifier is trained on synthetic data. Its labels are
+generated from rules based on the same features available to the model,
+so its high evaluation scores reflect label leakage rather than validated
+real-world predictive performance.
+
+See [`MODEL_CARD.md`](MODEL_CARD.md) for the full model card, evaluation
+approach, and intended-use limitations.
+
 ## Dataset
 
 The dataset is synthetic and stored at:
