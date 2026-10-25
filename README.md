@@ -105,6 +105,9 @@ The deployed dashboard contains three main sections:
 - Productivity prediction
 - Personalized focus recommendations
 - Downloadable prediction report
+- Prediction confidence and class-probability display
+- Session-based prediction history
+- Downloadable prediction history in CSV format
 
 ### About the Model
 
