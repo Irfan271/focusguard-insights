@@ -14,7 +14,7 @@ The application is deployed on Streamlit Community Cloud.
 
 > Add your deployed app URL here after publishing:
 >
-> **[Open FocusGuard Insights](YOUR_STREAMLIT_APP_URL)**
+> ****[Open FocusGuard Insights](https://focusguard-insights.streamlit.app/)****
 
 ## Project Overview
 
