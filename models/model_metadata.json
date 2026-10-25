@@ -1,0 +1,25 @@
+{
+    "model_type": "RandomForestClassifier",
+    "target_column": "productivity_label",
+    "feature_columns": [
+        "usage_minutes",
+        "sessions",
+        "notifications",
+        "hour_of_day",
+        "study_minutes",
+        "sleep_hours",
+        "daily_total_usage_minutes",
+        "daily_study_minutes",
+        "is_weekend",
+        "notifications_per_session",
+        "usage_per_session",
+        "category_Entertainment",
+        "category_Learning",
+        "category_Productivity",
+        "category_Social",
+        "category_Utility"
+    ],
+    "accuracy": 1.0,
+    "weighted_f1_score": 1.0,
+    "trained_at": "2026-10-25T20:22:58.941505"
+}
