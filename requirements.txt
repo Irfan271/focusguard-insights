@@ -7,3 +7,4 @@ scikit-learn
 joblib
 streamlit
 jupyter
+pytest==9.1.1

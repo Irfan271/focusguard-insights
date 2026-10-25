@@ -183,6 +183,11 @@ Then open:
 ```text
 http://localhost:8501
 ```
+## Run tests
+
+```powershell
+python -m pytest -q
+```
 
 ## Dashboard Features
 
