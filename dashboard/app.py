@@ -27,7 +27,7 @@ st.write(
 )
 
 # Load cleaned dataset.
-@st.cache_data
+@st.cache_data(ttl=900)
 def load_data():
     return pd.read_csv(CLEAN_DATA_FILE)
 
