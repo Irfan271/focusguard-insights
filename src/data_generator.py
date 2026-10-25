@@ -116,9 +116,30 @@ def save_dataset(df: pd.DataFrame) -> None:
 
 
 if __name__ == "__main__":
-    dataset = generate_app_usage_data()
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+
+    # Use India time regardless of where the script runs.
+    now = datetime.now(ZoneInfo("Asia/Kolkata"))
+
+    # Generate a rolling 90-day report ending yesterday.
+    end_date = now.date() - timedelta(days=1)
+    start_date = end_date - timedelta(days=89)
+
+    # Different synthetic data for each four-hour time window.
+    refresh_seed = int(now.timestamp()) // (4 * 60 * 60)
+
+    dataset = generate_app_usage_data(
+        start_date=start_date.isoformat(),
+        days=90,
+        users=5,
+        seed=refresh_seed,
+    )
+
     save_dataset(dataset)
 
     print(f"Dataset created: {RAW_DATA_FILE}")
+    print(f"Report period: {start_date} to {end_date}")
+    print(f"Refresh time: {now.isoformat()}")
     print(f"Rows: {len(dataset)}")
     print(dataset.head())
