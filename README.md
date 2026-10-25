@@ -1,5 +1,7 @@
 # FocusGuard Insights
 
+**Status:** Completed portfolio project demonstrating an end-to-end synthetic-data ML pipeline, grouped and temporal evaluation, model metadata tracking, and Streamlit deployment.
+
 FocusGuard Insights is a mini AI, Machine Learning, and Data Analysis project that analyzes app-usage data, predicts productivity levels, and provides personalized focus recommendations.
 
 Automated synthetic-data refresh using GitHub Actions on a four-hour schedule, with updated CSV reports reflected in the deployed Streamlit dashboard.
