@@ -1,11 +1,20 @@
 ![CI](https://github.com/irfan271/focusguard-insights/actions/workflows/ci.yml/badge.svg)
+
 # FocusGuard Insights
 
-**Status:** Completed portfolio project demonstrating an end-to-end synthetic-data ML pipeline, grouped and temporal evaluation, model metadata tracking, and Streamlit deployment.
+**Status:** Completed portfolio project demonstrating an end-to-end synthetic-data machine-learning pipeline, grouped and temporal evaluation, automated testing, continuous integration, model transparency, and Streamlit deployment.
 
-FocusGuard Insights is a mini AI, Machine Learning, and Data Analysis project that analyzes app-usage data, predicts productivity levels, and provides personalized focus recommendations.
+FocusGuard Insights is an AI, machine-learning, and data-analysis project that analyzes synthetic app-usage data, predicts productivity levels, provides personalized focus recommendations, and allows users to download a prediction report.
 
-Automated synthetic-data refresh using GitHub Actions on a four-hour schedule, with updated CSV reports reflected in the deployed Streamlit dashboard.
+The project uses an automated synthetic-data refresh through GitHub Actions on a four-hour schedule. Updated CSV reports are reflected in the deployed Streamlit dashboard.
+
+## Live Dashboard
+
+The application is deployed on Streamlit Community Cloud.
+
+> Add your deployed app URL here after publishing:
+>
+> **[Open FocusGuard Insights](YOUR_STREAMLIT_APP_URL)**
 
 ## Project Overview
 
@@ -19,13 +28,20 @@ The project uses synthetic daily app-usage data to answer questions such as:
 ## Key Features
 
 - Synthetic app-usage data generation
+- Automated data refresh using GitHub Actions
 - Data cleaning and feature engineering
 - Exploratory data analysis
 - Productivity classification using Random Forest
+- User-day grouped model evaluation
+- Future-date holdout evaluation
+- Rule-based baseline and transparent label-leakage documentation
 - Productivity prediction for new usage records
-- Personalized recommendations
+- Downloadable prediction report
+- Personalized focus recommendations
 - Interactive Streamlit dashboard
 - Weekly usage trend visualization
+- Automated pytest test suite
+- GitHub Actions continuous integration
 
 ## Tech Stack
 
@@ -38,36 +54,74 @@ The project uses synthetic daily app-usage data to answer questions such as:
 - Scikit-learn
 - Joblib
 - Streamlit
+- pytest
+- GitHub Actions
 - Jupyter Notebook
 
 ## Project Structure
 
 ```text
 focusguard-insights/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── data/
 │   ├── raw/
 │   ├── processed/
 │   └── external/
-├── notebooks/
-├── src/
 ├── dashboard/
+│   └── app.py
 ├── models/
+├── notebooks/
 ├── reports/
+├── src/
 ├── tests/
 ├── requirements.txt
 ├── .gitignore
+├── MODEL_CARD.md
 └── README.md
 ```
 
-## Model transparency
+## Dashboard Features
 
-The productivity classifier is trained on synthetic data. Its labels are
-generated from rules based on the same features available to the model,
-so its high evaluation scores reflect label leakage rather than validated
-real-world predictive performance.
+The deployed dashboard contains three main sections:
 
-See [`MODEL_CARD.md`](MODEL_CARD.md) for the full model card, evaluation
-approach, and intended-use limitations.
+### Dashboard
+
+- User and app-category filters
+- Total app usage, study time, and sleep KPIs
+- Usage-by-app visualization
+- Weekly usage trend
+- Week-over-week usage comparison
+- Top distraction app insight
+- Productivity distribution
+
+### Predict Productivity
+
+- App usage, session, notification, study, sleep, and time-of-day inputs
+- Daily screen-time and study-time totals
+- Weekend indicator
+- Input validation for inconsistent values
+- Productivity prediction
+- Personalized focus recommendations
+- Downloadable prediction report
+
+### About the Model
+
+- Explanation of model inputs and prediction process
+- Description of grouped and temporal evaluation
+- Clear disclosure of synthetic-data limitations
+- Explanation of label leakage
+- Intended-use and non-intended-use guidance
+- Link to the full model card
+
+## Model Transparency
+
+The productivity classifier is trained on synthetic data. Its labels are generated from rules based on the same features available to the model, so its high evaluation scores reflect **label leakage** rather than validated real-world predictive performance.
+
+The model should be treated as a demonstration of an end-to-end machine-learning pipeline, not as a validated predictor of real-world productivity.
+
+See [`MODEL_CARD.md`](MODEL_CARD.md) for the full model card, evaluation approach, data limitations, and intended-use guidance.
 
 ## Dataset
 
@@ -116,10 +170,11 @@ Input features include:
 - Hour of day
 - Study minutes
 - Sleep hours
-- Daily total usage
-- Daily study time
+- Daily total screen time
+- Daily total study time
 - Weekend indicator
-- Notification and usage ratios
+- Notifications per session
+- Usage per session
 - App category
 
 The trained model is saved at:
@@ -128,52 +183,81 @@ The trained model is saved at:
 models/productivity_classifier.joblib
 ```
 
+Model evaluation metadata is saved at:
+
+```text
+models/model_metadata.json
+```
+
+## Model Evaluation
+
+The project uses two complementary evaluation approaches:
+
+### User-day grouped split
+
+All app-usage records belonging to the same user and date are kept together in either the training or testing set. This prevents user-day overlap between the two sets.
+
+### Future-date holdout
+
+The model trains on the earliest 80% of dates and evaluates on the latest 20% of dates. This evaluates temporal generalization within the synthetic dataset.
+
+### Rule-based baseline
+
+A rule-based baseline is included because the productivity labels are generated from rules using the same input features. This makes the label-leakage limitation explicit in both the training output and model metadata.
+
 ## How to Run
 
-### 1. Create and activate the virtual environment
+### 1. Clone the repository
+
+```cmd
+git clone [https://github.com/irfan271/focusguard-insights.git](https://github.com/irfan271/focusguard-insights.git)
+cd focusguard-insights
+```
+
+### 2. Create and activate the virtual environment
 
 ```cmd
 python -m venv venv
 venv\Scripts\activate
 ```
 
-### 2. Install dependencies
+### 3. Install dependencies
 
 ```cmd
 pip install -r requirements.txt
 ```
 
-### 3. Generate the dataset
+### 4. Generate the dataset
 
 ```cmd
 python -m src.data_generator
 ```
 
-### 4. Clean the dataset
+### 5. Clean the dataset
 
 ```cmd
 python -m src.data_cleaning
 ```
 
-### 5. Train the model
+### 6. Train the model
 
 ```cmd
 python -m src.train_model
 ```
 
-### 6. Test prediction
+### 7. Test prediction
 
 ```cmd
 python -m src.predict
 ```
 
-### 7. Test recommendations
+### 8. Test recommendations
 
 ```cmd
 python -m src.recommendations
 ```
 
-### 8. Run the dashboard
+### 9. Run the dashboard
 
 ```cmd
 streamlit run dashboard/app.py
@@ -184,21 +268,24 @@ Then open:
 ```text
 http://localhost:8501
 ```
-## Run tests
+
+## Run Tests
+
+The project includes automated tests for feature preparation, category encoding, baseline behavior, model artifacts, metadata transparency, and model loading.
 
 ```powershell
 python -m pytest -q
 ```
 
-## Dashboard Features
+## Continuous Integration
 
-- User and app-category filters
-- Total app usage, study time, and sleep KPIs
-- Usage-by-app visualization
-- Weekly usage trend
-- Productivity distribution
-- Productivity prediction form
-- Personalized focus recommendations
+GitHub Actions automatically installs the project dependencies and runs the pytest suite on every push and pull request targeting `main`.
+
+The CI workflow is defined at:
+
+```text
+.github/workflows/ci.yml
+```
 
 ## Future Improvements
 
@@ -207,4 +294,5 @@ python -m pytest -q
 - Store data in a database
 - Add time-series forecasting for future usage
 - Use an LLM to generate more natural recommendations
-- Deploy the dashboard to Streamlit Community Cloud
+- Add downloadable CSV or PDF prediction reports
+- Add dashboard screenshots and a product demo
