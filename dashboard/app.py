@@ -293,7 +293,53 @@ category = st.selectbox(
     ],
 )
 
+st.write("Daily totals")
+
+daily_col1, daily_col2 = st.columns(2)
+
+daily_total_usage_minutes = daily_col1.number_input(
+    "Total screen time across all apps today (minutes)",
+    min_value=0,
+    max_value=1440,
+    value=420,
+    step=10,
+)
+
+daily_study_minutes = daily_col2.number_input(
+    "Total study time today (minutes)",
+    min_value=0,
+    max_value=1440,
+    value=60,
+    step=10,
+)
+
+is_weekend = st.checkbox("This record is for a Saturday or Sunday")
+
 if st.button("Predict Productivity"):
+    validation_errors = []
+
+    if usage_minutes > daily_total_usage_minutes:
+        validation_errors.append(
+            "Total daily screen time cannot be less than "
+            "the usage time for this app."
+        )
+
+    if study_minutes > daily_study_minutes:
+        validation_errors.append(
+            "Total daily study time cannot be less than "
+            "the study minutes entered above."
+        )
+
+    if usage_minutes > 0 and sessions == 0:
+        validation_errors.append(
+            "Enter at least one session when app usage is greater than zero."
+        )
+
+    if validation_errors:
+        for error in validation_errors:
+            st.error(error)
+        st.stop()
+
     record = {
         "usage_minutes": usage_minutes,
         "sessions": sessions,
@@ -301,9 +347,9 @@ if st.button("Predict Productivity"):
         "hour_of_day": hour_of_day,
         "study_minutes": study_minutes,
         "sleep_hours": sleep_hours,
-        "daily_total_usage_minutes": usage_minutes * 3,
-        "daily_study_minutes": study_minutes,
-        "is_weekend": 0,
+        "daily_total_usage_minutes": daily_total_usage_minutes,
+        "daily_study_minutes": daily_study_minutes,
+        "is_weekend": int(is_weekend),
         "notifications_per_session": round(
             notifications / max(sessions, 1), 2
         ),
