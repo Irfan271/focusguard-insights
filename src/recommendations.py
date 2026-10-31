@@ -1,7 +1,10 @@
 from src.config import TARGET_COLUMN
 
 
-def generate_recommendations(record: dict, prediction_result: dict) -> list:
+def generate_recommendations(
+    record: dict,
+    prediction_result: dict,
+) -> list:
     """
     Generate simple, explainable recommendations based on usage
     and the predicted productivity label.
@@ -14,10 +17,16 @@ def generate_recommendations(record: dict, prediction_result: dict) -> list:
     study = record.get("study_minutes", 0)
     notifications = record.get("notifications", 0)
     sleep = record.get("sleep_hours", 0)
-    daily_usage = record.get("daily_total_usage_minutes", 0)
-    daily_study = record.get("daily_study_minutes", 0)
+    daily_usage = record.get(
+        "daily_total_usage_minutes",
+        0,
+    )
+    daily_study = record.get(
+        "daily_study_minutes",
+        0,
+    )
 
-    # Recommendations based on predicted productivity.
+    # Recommendation based on predicted productivity.
     if prediction == "Distracted":
         recommendations.append(
             "Your usage pattern suggests a high distraction risk. "
@@ -64,6 +73,7 @@ def generate_recommendations(record: dict, prediction_result: dict) -> list:
 
     # Avoid duplicate recommendations.
     unique_recommendations = []
+
     for recommendation in recommendations:
         if recommendation not in unique_recommendations:
             unique_recommendations.append(recommendation)
@@ -84,11 +94,7 @@ if __name__ == "__main__":
         "is_weekend": 1,
         "notifications_per_session": 3.21,
         "usage_per_session": 8.57,
-        "category_Entertainment": 1,
-        "category_Learning": 0,
-        "category_Productivity": 0,
-        "category_Social": 0,
-        "category_Utility": 0,
+        "category": "Entertainment",
     }
 
     sample_prediction = {
@@ -106,5 +112,9 @@ if __name__ == "__main__":
     )
 
     print("Personalized recommendations:")
-    for index, recommendation in enumerate(recommendations, start=1):
+
+    for index, recommendation in enumerate(
+        recommendations,
+        start=1,
+    ):
         print(f"{index}. {recommendation}")

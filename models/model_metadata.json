@@ -1,5 +1,6 @@
 {
     "model_type": "RandomForestClassifier",
+    "pipeline": "ColumnTransformer with StandardScaler and OneHotEncoder, followed by RandomForestClassifier",
     "target_column": "productivity_label",
     "feature_columns": [
         "usage_minutes",
@@ -13,14 +14,28 @@
         "is_weekend",
         "notifications_per_session",
         "usage_per_session",
-        "category_Entertainment",
-        "category_Learning",
-        "category_Productivity",
-        "category_Social",
-        "category_Utility"
+        "category"
+    ],
+    "numeric_features": [
+        "usage_minutes",
+        "sessions",
+        "notifications",
+        "hour_of_day",
+        "study_minutes",
+        "sleep_hours",
+        "daily_total_usage_minutes",
+        "daily_study_minutes",
+        "is_weekend",
+        "notifications_per_session",
+        "usage_per_session"
+    ],
+    "categorical_features": [
+        "category"
     ],
     "classes": [
-        "Distracted"
+        "Distracted",
+        "Moderate",
+        "Productive"
     ],
     "accuracy": 1.0,
     "weighted_f1_score": 1.0,
@@ -47,28 +62,28 @@
     },
     "classification_report": {
         "Productive": {
-            "precision": 0.0,
-            "recall": 0.0,
-            "f1-score": 0.0,
-            "support": 0.0
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 346.0
         },
         "Moderate": {
-            "precision": 0.0,
-            "recall": 0.0,
-            "f1-score": 0.0,
-            "support": 0.0
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 1246.0
         },
         "Distracted": {
             "precision": 1.0,
             "recall": 1.0,
             "f1-score": 1.0,
-            "support": 1800.0
+            "support": 208.0
         },
         "accuracy": 1.0,
         "macro avg": {
-            "precision": 0.3333333333333333,
-            "recall": 0.3333333333333333,
-            "f1-score": 0.3333333333333333,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
             "support": 1800.0
         },
         "weighted avg": {
@@ -80,19 +95,19 @@
     },
     "confusion_matrix": [
         [
-            0,
-            0,
-            0
-        ],
-        [
-            0,
+            346,
             0,
             0
         ],
         [
             0,
+            1246,
+            0
+        ],
+        [
             0,
-            1800
+            0,
+            208
         ]
     ],
     "confusion_matrix_label_order": [
@@ -102,5 +117,5 @@
     ],
     "data_source": "synthetic",
     "evaluation_note": "User-day groups are separated between training and testing, and a future-date holdout is also evaluated. However, productivity_label is generated from rules based on the same features used for prediction, so the high accuracy reflects label leakage, not real-world predictive performance. This model should be treated as a demonstration of the pipeline.",
-    "trained_at": "2026-10-25T23:49:02.031526+05:30"
+    "trained_at": "2026-10-31T21:06:19.432340+05:30"
 }

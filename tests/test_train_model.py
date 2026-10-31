@@ -11,7 +11,7 @@ from src.config import (
     PRODUCTIVITY_LABELS,
 )
 from src.train_model import (
-    FEATURE_COLUMNS,
+    MODEL_FEATURE_COLUMNS,
     prepare_features,
     rule_based_baseline,
 )
@@ -33,39 +33,47 @@ def sample_dataframe():
             "notifications_per_session": [3.33, 4.0],
             "usage_per_session": [10.0, 9.0],
             "category": ["Study", "Social"],
-            "productivity_label": ["Productive", "Distracted"],
+            "productivity_label": [
+                "Productive",
+                "Distracted",
+            ],
         }
     )
 
 
-def test_prepare_features_returns_expected_shape(sample_dataframe):
+def test_prepare_features_returns_expected_shape(
+    sample_dataframe,
+):
     X, y = prepare_features(sample_dataframe)
 
     assert len(X) == 2
     assert len(y) == 2
 
-    # Numeric features plus one-hot encoded category columns.
-    assert "category_Study" in X.columns
-    assert "category_Social" in X.columns
+    assert list(X.columns) == MODEL_FEATURE_COLUMNS
 
-    for column in FEATURE_COLUMNS:
-        assert column in X.columns
+    assert "category" in X.columns
+    assert "category_Study" not in X.columns
+    assert "category_Social" not in X.columns
 
 
-def test_prepare_features_encodes_categories_correctly(sample_dataframe):
+def test_prepare_features_preserves_raw_categories(
+    sample_dataframe,
+):
     X, _ = prepare_features(sample_dataframe)
 
-    assert X.loc[0, "category_Study"] == 1
-    assert X.loc[0, "category_Social"] == 0
-
-    assert X.loc[1, "category_Study"] == 0
-    assert X.loc[1, "category_Social"] == 1
+    assert X.loc[0, "category"] == "Study"
+    assert X.loc[1, "category"] == "Social"
 
 
-def test_rule_based_baseline_returns_target_column(sample_dataframe):
+def test_rule_based_baseline_returns_target_column(
+    sample_dataframe,
+):
     baseline = rule_based_baseline(sample_dataframe)
 
-    assert baseline.tolist() == ["Productive", "Distracted"]
+    assert baseline.tolist() == [
+        "Productive",
+        "Distracted",
+    ]
 
 
 def test_clean_data_file_exists():
@@ -79,24 +87,39 @@ def test_trained_model_artifacts_exist():
 def test_model_metadata_contains_transparency_fields():
     assert MODEL_METADATA_FILE.exists()
 
-    with open(MODEL_METADATA_FILE, "r", encoding="utf-8") as file:
+    with open(
+        MODEL_METADATA_FILE,
+        "r",
+        encoding="utf-8",
+    ) as file:
         metadata = json.load(file)
 
     assert metadata["data_source"] == "synthetic"
-    assert "rule_based_baseline_accuracy" in metadata
+    assert (
+        "rule_based_baseline_accuracy" in metadata
+    )
     assert "future_date_holdout" in metadata
-    assert "label leakage" in metadata["evaluation_note"].lower()
+    assert (
+        "label leakage"
+        in metadata["evaluation_note"].lower()
+    )
 
 
 def test_model_metadata_classes_are_valid():
-    with open(MODEL_METADATA_FILE, "r", encoding="utf-8") as file:
+    with open(
+        MODEL_METADATA_FILE,
+        "r",
+        encoding="utf-8",
+    ) as file:
         metadata = json.load(file)
 
-    assert set(metadata["classes"]).issubset(set(PRODUCTIVITY_LABELS))
+    assert set(metadata["classes"]).issubset(
+        set(PRODUCTIVITY_LABELS)
+    )
 
 
 def test_saved_model_can_make_predictions():
-    model = joblib.load(CLASSIFIER_FILE)
+    pipeline = joblib.load(CLASSIFIER_FILE)
 
-    assert hasattr(model, "predict")
-    assert hasattr(model, "predict_proba")
+    assert hasattr(pipeline, "predict")
+    assert hasattr(pipeline, "predict_proba")

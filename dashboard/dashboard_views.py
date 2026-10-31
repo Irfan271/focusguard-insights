@@ -69,7 +69,7 @@ def render_usage_by_app_chart(filtered_df):
         },
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def render_weekly_usage_trend(filtered_df):
@@ -103,7 +103,7 @@ def render_weekly_usage_trend(filtered_df):
         },
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def render_week_over_week_comparison(filtered_df):
@@ -252,4 +252,4 @@ def render_productivity_distribution(filtered_df):
         title="Productivity Label Distribution",
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")

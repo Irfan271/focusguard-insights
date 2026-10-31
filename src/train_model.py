@@ -3,6 +3,7 @@ from datetime import datetime
 
 import joblib
 import pandas as pd
+from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     accuracy_score,
@@ -10,11 +11,12 @@ from sklearn.metrics import (
     confusion_matrix,
     f1_score,
 )
-from sklearn.model_selection import (
-    GroupShuffleSplit,
-    train_test_split,
+from sklearn.model_selection import GroupShuffleSplit
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import (
+    OneHotEncoder,
+    StandardScaler,
 )
-from sklearn.preprocessing import StandardScaler
 
 from src.config import (
     CLASSIFIER_FILE,
@@ -26,7 +28,7 @@ from src.config import (
 )
 
 
-FEATURE_COLUMNS = [
+NUMERIC_FEATURES = [
     "usage_minutes",
     "sessions",
     "notifications",
@@ -40,7 +42,13 @@ FEATURE_COLUMNS = [
     "usage_per_session",
 ]
 
-CATEGORY_COLUMN = "category"
+CATEGORICAL_FEATURES = [
+    "category",
+]
+
+MODEL_FEATURE_COLUMNS = (
+    NUMERIC_FEATURES + CATEGORICAL_FEATURES
+)
 
 
 def load_clean_data() -> pd.DataFrame:
@@ -49,18 +57,13 @@ def load_clean_data() -> pd.DataFrame:
 
 
 def prepare_features(df: pd.DataFrame):
-    """Create numeric features, encoded categories, and the target."""
-    category_dummies = pd.get_dummies(
-        df[CATEGORY_COLUMN],
-        prefix="category",
-        dtype=int,
-    )
+    """
+    Create raw model features and the target.
 
-    X = pd.concat(
-        [df[FEATURE_COLUMNS], category_dummies],
-        axis=1,
-    )
-
+    The category column remains in its original form. Scaling and one-hot
+    encoding are handled by the saved sklearn Pipeline.
+    """
+    X = df[MODEL_FEATURE_COLUMNS].copy()
     y = df[TARGET_COLUMN]
 
     return X, y
@@ -69,6 +72,43 @@ def prepare_features(df: pd.DataFrame):
 def rule_based_baseline(df: pd.DataFrame) -> pd.Series:
     """Reproduce the rule used to create productivity_label."""
     return df[TARGET_COLUMN]
+
+
+def build_pipeline() -> Pipeline:
+    """
+    Build the complete preprocessing and classification pipeline.
+    """
+    preprocessing = ColumnTransformer(
+        transformers=[
+            (
+                "numeric",
+                StandardScaler(),
+                NUMERIC_FEATURES,
+            ),
+            (
+                "categorical",
+                OneHotEncoder(
+                    handle_unknown="ignore",
+                    sparse_output=False,
+                ),
+                CATEGORICAL_FEATURES,
+            ),
+        ]
+    )
+
+    classifier = RandomForestClassifier(
+        n_estimators=200,
+        max_depth=12,
+        random_state=42,
+        n_jobs=-1,
+    )
+
+    return Pipeline(
+        steps=[
+            ("preprocessing", preprocessing),
+            ("classifier", classifier),
+        ]
+    )
 
 
 def evaluate_future_date_holdout(df: pd.DataFrame):
@@ -93,7 +133,9 @@ def evaluate_future_date_holdout(df: pd.DataFrame):
     y_train = y[training_mask]
     y_test = y[testing_mask]
 
-    missing_training_classes = set(y.unique()) - set(y_train.unique())
+    missing_training_classes = set(y.unique()) - set(
+        y_train.unique()
+    )
 
     if missing_training_classes:
         raise ValueError(
@@ -101,19 +143,10 @@ def evaluate_future_date_holdout(df: pd.DataFrame):
             f"{sorted(missing_training_classes)}"
         )
 
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+    pipeline = build_pipeline()
+    pipeline.fit(X_train, y_train)
 
-    model = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=12,
-        random_state=42,
-        n_jobs=-1,
-    )
-
-    model.fit(X_train_scaled, y_train)
-    y_pred = model.predict(X_test_scaled)
+    y_pred = pipeline.predict(X_test)
 
     accuracy = accuracy_score(y_test, y_pred)
     weighted_f1 = f1_score(
@@ -154,12 +187,18 @@ def evaluate_future_date_holdout(df: pd.DataFrame):
 def train_productivity_classifier():
     """Train and evaluate using a user-day grouped split."""
     df = load_clean_data()
+
     X, y = prepare_features(df)
 
     baseline_predictions = rule_based_baseline(df)
-    baseline_accuracy = accuracy_score(y, baseline_predictions)
+    baseline_accuracy = accuracy_score(
+        y,
+        baseline_predictions,
+    )
 
-    print(f"Rule-based baseline accuracy: {baseline_accuracy:.4f}")
+    print(
+        f"Rule-based baseline accuracy: {baseline_accuracy:.4f}"
+    )
 
     future_date_results = evaluate_future_date_holdout(df)
 
@@ -188,15 +227,18 @@ def train_productivity_classifier():
 
     train_groups = set(groups.iloc[train_indices])
     test_groups = set(groups.iloc[test_indices])
-    overlapping_groups = train_groups.intersection(test_groups)
+    overlapping_groups = train_groups.intersection(
+        test_groups
+    )
 
     if overlapping_groups:
         raise ValueError(
             "User-day overlap detected between training and testing."
         )
 
-    # GroupShuffleSplit does not guarantee class stratification.
-    missing_training_classes = set(y.unique()) - set(y_train.unique())
+    missing_training_classes = set(y.unique()) - set(
+        y_train.unique()
+    )
 
     if missing_training_classes:
         raise ValueError(
@@ -217,23 +259,10 @@ def train_productivity_classifier():
     print("\nTesting label distribution:")
     print(y_test.value_counts())
 
-    # Fit preprocessing on training data only.
-    # Retained for compatibility with the existing prediction module.
-    scaler = StandardScaler()
+    pipeline = build_pipeline()
+    pipeline.fit(X_train, y_train)
 
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-
-    model = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=12,
-        random_state=42,
-        n_jobs=-1,
-    )
-
-    model.fit(X_train_scaled, y_train)
-
-    y_pred = model.predict(X_test_scaled)
+    y_pred = pipeline.predict(X_test)
 
     accuracy = accuracy_score(y_test, y_pred)
     weighted_f1 = f1_score(
@@ -278,15 +307,25 @@ def train_productivity_classifier():
 
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-    joblib.dump(model, CLASSIFIER_FILE)
-    joblib.dump(scaler, MODEL_DIR / "scaler.joblib")
-    joblib.dump(list(X.columns), MODEL_DIR / "feature_columns.joblib")
+    joblib.dump(pipeline, CLASSIFIER_FILE)
+    joblib.dump(
+        MODEL_FEATURE_COLUMNS,
+        MODEL_DIR / "feature_columns.joblib",
+    )
 
     metadata = {
         "model_type": "RandomForestClassifier",
+        "pipeline": (
+            "ColumnTransformer with StandardScaler and OneHotEncoder, "
+            "followed by RandomForestClassifier"
+        ),
         "target_column": TARGET_COLUMN,
-        "feature_columns": list(X.columns),
-        "classes": model.classes_.tolist(),
+        "feature_columns": MODEL_FEATURE_COLUMNS,
+        "numeric_features": NUMERIC_FEATURES,
+        "categorical_features": CATEGORICAL_FEATURES,
+        "classes": pipeline.named_steps[
+            "classifier"
+        ].classes_.tolist(),
         "accuracy": round(float(accuracy), 4),
         "weighted_f1_score": round(float(weighted_f1), 4),
         "rule_based_baseline_accuracy": round(
@@ -328,7 +367,7 @@ def train_productivity_classifier():
     print(f"\nModel saved: {CLASSIFIER_FILE}")
     print(f"Metadata saved: {MODEL_METADATA_FILE}")
 
-    return model, scaler, list(X.columns)
+    return pipeline
 
 
 if __name__ == "__main__":

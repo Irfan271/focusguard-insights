@@ -3,55 +3,48 @@ import pandas as pd
 
 from src.config import (
     CLASSIFIER_FILE,
-    MODEL_DIR,
     TARGET_COLUMN,
 )
 
 
 def load_model_artifacts():
     """
-    Load the trained classifier, scaler, and feature columns.
+    Load the complete trained prediction pipeline.
+
+    The pipeline contains numeric scaling, categorical one-hot encoding,
+    and the Random Forest classifier.
     """
-    model = joblib.load(CLASSIFIER_FILE)
-    scaler = joblib.load(MODEL_DIR / "scaler.joblib")
-    feature_columns = joblib.load(MODEL_DIR / "feature_columns.joblib")
-
-    return model, scaler, feature_columns
+    return joblib.load(CLASSIFIER_FILE)
 
 
-def prepare_input_features(record: dict, feature_columns: list) -> pd.DataFrame:
+def prepare_input_features(record: dict) -> pd.DataFrame:
     """
-    Convert one input record into the exact feature format used during training.
+    Convert one raw input record into a one-row DataFrame.
+
+    The record must contain raw values, including the original category
+    such as "Social", "Learning", or "Entertainment". The saved pipeline
+    handles scaling and category encoding.
     """
-    input_df = pd.DataFrame([record])
-
-    # Add missing one-hot category columns.
-    for column in feature_columns:
-        if column not in input_df.columns:
-            input_df[column] = 0
-
-    # Keep columns in the same order as training.
-    input_df = input_df[feature_columns]
-
-    return input_df
+    return pd.DataFrame([record])
 
 
 def predict_productivity(record: dict) -> dict:
     """
     Predict the productivity label for one app-usage record.
     """
-    model, scaler, feature_columns = load_model_artifacts()
+    pipeline = load_model_artifacts()
 
-    input_df = prepare_input_features(record, feature_columns)
-    input_scaled = scaler.transform(input_df)
+    input_df = prepare_input_features(record)
 
-    prediction = model.predict(input_scaled)[0]
-    probabilities = model.predict_proba(input_scaled)[0]
+    prediction = pipeline.predict(input_df)[0]
+    probabilities = pipeline.predict_proba(input_df)[0]
+
+    classifier = pipeline.named_steps["classifier"]
 
     probability_by_class = {
         class_name: round(float(probability), 4)
         for class_name, probability in zip(
-            model.classes_,
+            classifier.classes_,
             probabilities,
         )
     }
@@ -64,22 +57,18 @@ def predict_productivity(record: dict) -> dict:
 
 if __name__ == "__main__":
     sample_record = {
-        "usage_minutes": 120,
-        "sessions": 14,
-        "notifications": 45,
-        "hour_of_day": 22,
-        "study_minutes": 35,
-        "sleep_hours": 6.0,
-        "daily_total_usage_minutes": 420,
-        "daily_study_minutes": 45,
-        "is_weekend": 1,
-        "notifications_per_session": 3.21,
-        "usage_per_session": 8.57,
-        "category_Entertainment": 1,
-        "category_Learning": 0,
-        "category_Productivity": 0,
-        "category_Social": 0,
-        "category_Utility": 0,
+    "usage_minutes": 25,
+    "sessions": 4,
+    "notifications": 8,
+    "hour_of_day": 10,
+    "study_minutes": 120,
+    "sleep_hours": 7.5,
+    "daily_total_usage_minutes": 180,
+    "daily_study_minutes": 180,
+    "is_weekend": 0,
+    "notifications_per_session": 2.0,
+    "usage_per_session": 6.25,
+    "category": "Learning",
     }
 
     result = predict_productivity(sample_record)

@@ -155,7 +155,12 @@ def validate_prediction_inputs(inputs):
 
 
 def build_model_record(inputs):
-    """Convert dashboard inputs into the model feature record."""
+    """
+    Convert dashboard inputs into a raw model input record.
+
+    The saved pipeline handles scaling and category encoding, so this
+    function must not create one-hot columns or scale values manually.
+    """
     sessions = max(inputs["sessions"], 1)
 
     return {
@@ -180,7 +185,7 @@ def build_model_record(inputs):
             inputs["usage_minutes"] / sessions,
             2,
         ),
-        f"category_{inputs['category']}": 1,
+        "category": inputs["category"],
     }
 
 
